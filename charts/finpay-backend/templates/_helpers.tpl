@@ -3,7 +3,11 @@ finpay-backend
 {{- end }}
 
 {{- define "finpay-backend.fullname" -}}
+{{- if contains (include "finpay-backend.name" .) .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
 {{- printf "%s-%s" .Release.Name (include "finpay-backend.name" .) | trunc 63 | trimSuffix "-" }}
+{{- end -}}
 {{- end }}
 
 {{- define "finpay-backend.labels" -}}
