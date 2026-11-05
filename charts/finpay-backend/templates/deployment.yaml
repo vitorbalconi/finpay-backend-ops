@@ -18,6 +18,8 @@ spec:
         - name: finpay-backend
           image: {{ include "finpay-backend.image" . | quote }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
           env:
             - name: APP_VERSION
               value: {{ .Values.image.tag | default .Chart.AppVersion | quote }}
