@@ -11,26 +11,23 @@ environments/production/values.yaml   Estado desejado de production
 .github/workflows/deploy.yml          CD manual que propõe um Pull Request
 ```
 
-O Chart cria um Deployment com uma réplica e um Service `ClusterIP` chamado exatamente `finpay-backend`, na porta 3000. As probes de readiness e liveness consultam `/api/health`. `APP_VERSION` recebe `appVersion` dos values.
+O Chart cria um Deployment com uma réplica e um Service `ClusterIP` chamado exatamente `finpay-backend`, na porta 3000. As probes de readiness e liveness consultam `/api/health`. `APP_VERSION` recebe `image.tag` dos values.
 
 ## Versões e imagem imutável
 
 - `Chart.yaml: version` versiona a estrutura e os templates do Chart, independentemente da aplicação.
 - `Chart.yaml: appVersion` é apenas a versão padrão/documental da aplicação.
-- `appVersion` nos values do ambiente registra a release promovida e configura `APP_VERSION`.
-- `image.digest` fixa exatamente o artefato executado. Se preenchido, a imagem renderizada é `repository@sha256:digest`; a tag nunca é combinada com o digest.
-- `image.tag` é um fallback útil para desenvolvimento do Chart. O estado promovido deve usar digest.
-
-Os digests vazios nos values iniciais são placeholders explícitos. Eles não representam um digest inventado e serão preenchidos pelo workflow após consulta ao GHCR público.
+- `image.tag` registra a release promovida e configura `APP_VERSION`.
+- `image.tag` define a imagem renderizada como `repository:tag` e registra a release promovida.
 
 ## CD manual
 
 Em **Actions > Propose deployment > Run workflow**, informe:
 
 - `environment`: `development` ou `production`;
-- `release`: uma tag existente em `ghcr.io/vitorbalconi/finpay-backend`, como `v1.0.0`.
+- `release`: uma tag existente em `ghcr.io/vitorbalconi/finpay-backend`, como `1.0.0`.
 
-O workflow valida os inputs, resolve o digest imutável no GHCR, altera somente `environments/<environment>/values.yaml`, executa `helm lint` e `helm template` e abre um PR contra a `main` protegida. Se versão e digest já forem os desejados, ele valida o Chart, mas não cria commit nem PR. Não há acesso a Kubernetes ou Argo CD.
+O workflow valida os inputs, altera somente `environments/<environment>/values.yaml`, executa `helm lint` e `helm template` e abre um PR contra a `main` protegida. Se a tag já for a desejada, ele valida o Chart, mas não cria commit nem PR. Não há acesso a Kubernetes ou Argo CD.
 
 O pacote GHCR é público, portanto nenhuma credencial de leitura é necessária. No repositório OPS, habilite **Settings > Actions > General > Workflow permissions > Allow GitHub Actions to create and approve pull requests**. O workflow concede ao `GITHUB_TOKEN` apenas `contents: write` e `pull-requests: write`; as regras de proteção e aprovação da `main` continuam valendo.
 
